@@ -74,4 +74,3 @@ This architecture balances **temporal feature extraction** with **simplicity**, 
 
 ---
 
-## 📂 Project Structure
