@@ -1,9 +1,77 @@
-# Binary-Driver-Attentive-States
+# EEG-Based Attention Lapse Prediction Using CNN
 
-The Simulated Attention and Drowsiness Task (SADT), an open-access and documented EEG signal dataset for attention and vigilance tasks offering a database that contains electrophysiological and behavioral recordings of 27 healthy subjects (ages 18–35 years), normal or corrected to normal vision, and no history of neurological or psychiatric illness was used. Data were captured with a 32-channel Quik Cap EEG system under the international 10-20 setup sampled at 500 Hz within the simulated driving lab of National Chiao Tung University, Taiwan. Steering back to the center lane when a sudden unexpected lane deviation occurred was a response task. The recording holds identified onsets and offsets of lane deviations (left/right) as well as onsets and offsets of corresponding responses with which response times can be accurately calculated. Next to raw EEG signals, the recordings hold a high concentration cognitive event-related potentials (ERPs) rich in theta frequency, P300 and N200 components, long-term indicators of cognition and attention. 
-Of the chosen five channels, Fz, Cz, and Pz electrodes that are placed strategically along the midline with P3 and P4 placed along the parietal regions are areas claimed to register significant event-related potential (ERP) components involved in vigilance and attentional engagement. The Fz channel is highly correlated with frontal midline theta (4-8 Hz) oscillations, an already established biomarker of cognitive control and mental effort during tasks of attention requirement. Theta synchronization at Fz has also been reported to elevate under ongoing attentional load, hence being correlated with both active and passive paradigms' performance.  
-P300 detection in oddball or attention-switch tasks comes through electrodes positioned at Cz and Pz regions. P3b, an indicator of attentional resource allocation and updating of working memory is known to be maximized at the Pz region. Moreover, electrodes at P3 and P4 parietal cortex are critical for recording lateralized neural activity and N200 registration associated with conflict detection as well as early processes of attention discrimination. Recent studies have ascertained the predictive value of P3, P4, and Pz signals for diagnosing attentional states based on ERP latencies and theta band modulations.  
-By limiting the input space to these five electrodes, neurocognitive specificity is preserved without exacerbating the performance complexity of the model, preserving computational efficiency which is a typical practice for interpretable and functional EEG-based attention models. For attentional states ground truth labels generation, we utilize reaction times (RT) of behavioral responses as a highly interpretable measure of cognitive responsiveness. Each EEG epoch was timelocked to onset deviance stimulus (left or right) and the corresponding motor response was identified with time-stamped event markers. Reaction time was quantified as temporal difference between these two events, and valid trials corrective responses were considered for subsequent analysis. 
-Labeling was implemented using percentile thresholding, wherein the 75th percentile of all valid RTs was determined for all subjects. RTs that were above the cut-off were labeled as "slow responses" (1), while the rest RTs (≤cut-off) had a score of 0 and were considered as fast responses. This technique maintains inter-subject variability reducing the effects of extreme outliers when percentile-based segmentation is used to distinguish attentional lapses, perceptual delays, and cognitive fatigue.  
-Such binary classification, while based on RT labelling, has been observed to confront differences in the three electrophysiological markers mid-frontal theta, posterior P300 activity, and the N200, that are indicators of attentional control and evaluation processes. Through linking response behaviors to time-locked neural windows (-200 to +800ms), the derived labels are grounded in neurocognitive theory and thus render subsequent machine learning predictions from EEG dynamics more explainable. 
-For classifying attentive vs. non-attentive trials from pre-response EEG signals, we employed a lightweight CNN architecture for EEG time-series classification only. It consists of three consecutive 1D convolutional blocks with the boosting filter sizes from 32 to 64 and 128 while consecutively reducing kernel sizes (7, 5, 3). The preceding operations are followed by batch normalization, max pooling, and then dropout (30% for preventing overfitting and improving generalization). The feature extracted is flattened then passed on to a dense layer of 128 neurons with the use of ReLU activation, batch normalization, and finally a 50% dropout layer. After that, the output layer is a sigmoid unit for outputting binary values. He-normal initialization is utilized for the regularization of the gradient flow and to accelerate convergence next to ReLU activation. The balance between temporal feature extraction and architectural simplicity makes this model suitable for EEG-based cognitive state detection in low-channel or embedded applications in the future.  
+This project investigates the prediction of **attentional lapses** in a simulated driving environment using **EEG event-related potentials (ERPs)** and a lightweight **1D Convolutional Neural Network (CNN)**.  
+The approach links **behavioral reaction times (RTs)** with neurocognitive biomarkers (theta oscillations, P300, and N200 components) to produce interpretable and computationally efficient predictions of cognitive states.
+
+---
+
+##  Dataset: Simulated Attention and Drowsiness Task (SADT)
+
+The study uses the **Simulated Attention and Drowsiness Task (SADT)** dataset, an open-access EEG database collected at **National Chiao Tung University, Taiwan**.  
+
+- **Subjects**: 27 healthy adults (ages 18–35, normal or corrected vision, no neurological/psychiatric illness).  
+- **EEG Acquisition**:  
+  - 32-channel Quik Cap EEG system.  
+  - International **10–20 setup**, sampled at **500 Hz**.  
+- **Task**: Subjects performed a **lane-keeping driving task**, where sudden lane deviations (left/right) occurred. The task was to steer back to the center lane.  
+- **Event Markers**: Onsets/offsets of lane deviations and corresponding responses allow precise **reaction time (RT)** calculation.  
+- **Signals Captured**: ERP-rich EEG activity containing:  
+  - **Theta band** (4–8 Hz)  
+  - **P300** (linked to attentional resource allocation and working memory)  
+  - **N200** (linked to conflict detection and early attention discrimination)  
+
+---
+
+##  Electrode Selection
+
+To maximize **neurocognitive specificity** while ensuring **computational efficiency**, only **five electrodes** were selected:
+
+- **Fz**: Frontal midline theta, a biomarker of cognitive control and attentional load.  
+- **Cz, Pz**: Strong contributors to P300 detection in attention-switch/oddball paradigms.  
+- **P3, P4**: Capture lateralized parietal activity, N200 responses, and attentional discrimination.  
+
+This channel reduction preserves the key attentional markers while reducing processing complexity for functional, interpretable EEG-based attention models.
+
+---
+
+##  Labeling Strategy
+
+Attentional states were labeled using **reaction times (RTs)** from lane deviation correction responses:
+
+1. Each EEG epoch was **time-locked** to lane deviation onset and subsequent motor response.  
+2. RT = time difference between deviation onset and steering correction.  
+3. Percentile thresholding was applied:  
+   - RTs ≤ 75th percentile → **Fast Response (0)**  
+   - RTs > 75th percentile → **Slow Response (1)**  
+
+✅ This binary classification preserves **inter-subject variability** while reducing the influence of extreme outliers.  
+✅ Labels align with well-established ERP markers (theta, P300, N200), grounding machine learning predictions in **cognitive theory**.
+
+---
+
+##  CNN Architecture
+
+A **lightweight 1D CNN** was implemented for EEG time-series classification:
+
+- **Convolutional Blocks** (3 layers):  
+  - Filters: 32 → 64 → 128  
+  - Kernel sizes: 7 → 5 → 3  
+  - Each block includes **Batch Normalization**, **Max Pooling**, and **Dropout** (30%).  
+- **Dense Layer**: 128 neurons, ReLU activation, Batch Normalization, Dropout (50%).  
+- **Output Layer**: Sigmoid activation for **binary classification** (attentive vs. non-attentive).  
+- **Initialization**: He-normal for stable gradient flow and faster convergence.  
+
+This architecture balances **temporal feature extraction** with **simplicity**, making it suitable for **low-channel or embedded EEG applications**.
+
+---
+
+##  Key Insights
+
+- **Behavioral Integration**: RT-based labeling links neural activity to meaningful cognitive outcomes.  
+- **ERP Biomarkers**: Mid-frontal theta, posterior P300, and parietal N200 guided both electrode selection and interpretation.  
+- **Efficient Modeling**: Reduced input space (5 electrodes) and lightweight CNN preserve both **interpretability** and **computational feasibility**.  
+- **Explainability**: Labels are grounded in established neurocognitive theory, ensuring predictions are scientifically interpretable.  
+
+---
+
+## 📂 Project Structure
